@@ -1,0 +1,83 @@
+This is the entire world:
+
+#include <array>
+#include <string>
+
+namespace Nāwhaianō_nāwhaianōrā_Ināwhaianō {
+
+    enum zero_set {
+        pūwāhi_kau,
+        pūtake_aukati,
+        huinga_whakaputa,
+        katinotoa,
+        kauaeheahea,
+        huinga_kōwhiringa
+    };
+
+    struct Te_Whariki_Pumotu {
+        void whakawātea() {
+            ngā_zero_set.fill(pūwāhi_kau);
+        }
+
+        void whakatakoto(unsigned int x, unsigned int y, zero_set z) {
+            ngā_zero_set[taupū(x, y)] = z;
+        }
+
+        zero_set pānui(unsigned int x, unsigned int y) const {
+            return ngā_zero_set[taupū(x, y)];
+        }
+
+        void tāpiri(const Te_Whariki_Pumotu& atu, int nekeneke_x, int nekeneke_y) {
+            for (unsigned int y = 1; y <= teitei; ++y) {
+                for (unsigned int x = 1; x <= whānui; ++x) {
+                    zero_set z = atu.ngā_zero_set[taupū(x, y)];
+                    if (z == pūwāhi_kau) continue;
+
+                    int hou_x = static_cast<int>(x) + nekeneke_x;
+                    int hou_y = static_cast<int>(y) + nekeneke_y;
+
+                    if (hou_x >= 1 && hou_x <= static_cast<int>(whānui) &&
+                        hou_y >= 1 && hou_y <= static_cast<int>(teitei)) {
+                        whakatakoto(static_cast<unsigned int>(hou_x),
+                            static_cast<unsigned int>(hou_y), z);
+                    }
+                }
+            }
+        }
+        static constexpr unsigned int whānui = 19;
+        static constexpr unsigned int teitei = 19;
+
+        std::array<zero_set, whānui* teitei> ngā_zero_set{};
+
+        static constexpr unsigned int taupū(unsigned int x, unsigned int y) {
+            return (y - 1) * whānui + (x - 1);
+        }
+
+        std::string ascii() const {
+            std::string out;
+
+            for (unsigned int y = 1; y <= teitei; ++y) {
+                for (unsigned int x = 1; x <= whānui; ++x) {
+                    out += tohu(ngā_zero_set[taupū(x, y)]);
+                    if (x < whānui) out += ' ';
+                }
+                out += '\n';
+            }
+
+            return out;
+        }
+
+        static char tohu(zero_set z) {
+            switch (z) {
+            case pūwāhi_kau: return '.';
+            case pūtake_aukati: return '0';
+            case huinga_whakaputa: return 'W';
+            case katinotoa: return 'K';
+            case kauaeheahea: return 'X';
+            case huinga_kōwhiringa: return '?';
+            default: return '!';
+            }
+        }
+    };
+
+}
