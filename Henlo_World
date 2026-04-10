@@ -1,6 +1,7 @@
 This is the entire world:
 
 #include <array>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -87,17 +88,18 @@ namespace Nāwhaianō_nāwhaianōrā_Ināwhaianō {
     // Iho (cores) — each stores one axis as raw bits.
     // Independently they represent identity or state;
     // together they encode a coordinate.
-    struct IhoX {
+    // The Aha tag distinguishes X from Y without code duplication.
+    enum class IhoAha { X, Y };
+
+    template<IhoAha Aha>
+    struct Iho {
         unsigned int pakiaka = 0;
         void tautuhia(unsigned int bits) { pakiaka = bits; }
         unsigned int pānui() const { return pakiaka; }
     };
 
-    struct IhoY {
-        unsigned int pakiaka = 0;
-        void tautuhia(unsigned int bits) { pakiaka = bits; }
-        unsigned int pānui() const { return pakiaka; }
-    };
+    using IhoX = Iho<IhoAha::X>;
+    using IhoY = Iho<IhoAha::Y>;
 
     // Kātiaho (cartridge) — interface layer that lets outside logic
     // be slotted in.  Each concrete cartridge awakens its own behaviour.
@@ -122,12 +124,12 @@ namespace Nāwhaianō_nāwhaianōrā_Ināwhaianō {
     // Kapua (control layer) — synthesises IhoX and IhoY.
     // When needed, their bits are treated as a single coordinate pair;
     // otherwise each core carries its own identity or state.
-    // Humans interact by inserting cartridges (tāpiri_kātiaho) and
-    // awakening them (whakaoho).
+    // Kapua owns all inserted cartridges (unique_ptr); humans place them
+    // by transferring ownership via tāpiri_kātiaho.
     struct Kapua {
         IhoX iho_x;
         IhoY iho_y;
-        std::vector<Kātiaho*> ngā_kātiaho;
+        std::vector<std::unique_ptr<Kātiaho>> ngā_kātiaho;
 
         // Return the paired coordinate synthesised from both cores.
         std::pair<unsigned int, unsigned int> ārahitia() const {
@@ -135,13 +137,13 @@ namespace Nāwhaianō_nāwhaianōrā_Ināwhaianō {
         }
 
         // Insert a cartridge — the human places it playfully.
-        void tāpiri_kātiaho(Kātiaho* k) {
-            ngā_kātiaho.push_back(k);
+        void tāpiri_kātiaho(std::unique_ptr<Kātiaho> k) {
+            ngā_kātiaho.push_back(std::move(k));
         }
 
         // Awaken all inserted cartridges against the given grid.
         void whakaoho(Te_Whariki_Pumotu& papa) {
-            for (auto* k : ngā_kātiaho) {
+            for (auto& k : ngā_kātiaho) {
                 k->whakaoho(papa, iho_x, iho_y);
             }
         }
